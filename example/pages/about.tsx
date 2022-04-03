@@ -1,6 +1,7 @@
 import { ReactElement } from 'react';
 import Link from 'next/link'
 import Layout from '../components/Layout'
+import { FeatureGate } from 'feature-gate';
 
 const AboutPage = (): ReactElement => (
   <Layout title="About | Next.js + TypeScript Example">
@@ -11,6 +12,15 @@ const AboutPage = (): ReactElement => (
         <a>Go home</a>
       </Link>
     </p>
+
+    <FeatureGate name="feature1">
+      <>
+        <p>This is an experimental feature 1</p>
+        <p>This is an experimental feature 1</p>
+        <p>This is an experimental feature 1</p>
+        <p>This is an experimental feature 1</p>
+      </>
+    </FeatureGate>
   </Layout>
 )
 

@@ -2,19 +2,19 @@ import { useState, ReactElement } from 'react';
 import { FeatureGateProvider } from 'feature-gate';
 // import App from "next/app";
 import type { AppProps /*, AppContext */ } from 'next/app';
-import RoleSelector from '../components/RoleSelector'
+import FeatureSelector from '../components/FeatureSelector'
 
 const rules = Object.freeze({
-  users: ['admin', 'user'],
-  "users-api": ['admin'],
+  feature1: 'true',
+  ABtest: 'A',
 });
 
 function MyApp({ Component, pageProps }: AppProps): ReactElement {
-  const [role, setRole] = useState("user");
+  const [featureFlags, setFlags] = useState({});
   return (
-    <FeatureGateProvider role={role} rulesMap={rules}>
+    <FeatureGateProvider featureFlags={featureFlags} features={rules}>
       <>
-        <RoleSelector onChange={setRole} />
+        <FeatureSelector onChange={setFlags} />
         <Component {...pageProps} />
       </>
     </FeatureGateProvider>

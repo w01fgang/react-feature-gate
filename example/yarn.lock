@@ -1094,6 +1094,11 @@ fastq@^1.6.0:
   dependencies:
     reusify "^1.0.4"
 
+feature-gate@latest:
+  version "1.0.1"
+  resolved "https://registry.yarnpkg.com/feature-gate/-/feature-gate-1.0.1.tgz#696209c05b9e9060cc10ecd61ddfcaa47a208a0c"
+  integrity sha512-yczfCFGgIBOP3Mfp6ID9Jbpvgo3XHyi2978cs6h7p8VQzZ/AJ+08pm8Pgzv/YZT6DqpmH/z++NIeULlzKXRwPw==
+
 fill-range@^7.0.1:
   version "7.0.1"
   resolved "https://registry.yarnpkg.com/fill-range/-/fill-range-7.0.1.tgz#1919a6a7c75fe38b2c7c77e5198535da9acdda40"
@@ -2029,11 +2034,6 @@ pbkdf2@^3.0.3:
     ripemd160 "^2.0.1"
     safe-buffer "^5.0.1"
     sha.js "^2.4.8"
-
-permission-gate@latest:
-  version "0.0.9"
-  resolved "https://registry.yarnpkg.com/permission-gate/-/permission-gate-0.0.9.tgz#eea63b4f779292b9af401f74708d90020352ab29"
-  integrity sha512-I9s/ToPbSVYEYl/QId3hmZkVaZs6zDOjeHW/4fLX21XR6XRaaTKVKAfF36z9YXALCUbo9AWEevo7Nuzp7vL/nA==
 
 picomatch@^2.0.4, picomatch@^2.2.1, picomatch@^2.2.3:
   version "2.3.0"

@@ -1,5 +1,5 @@
 import React, { ReactElement, ReactNode } from 'react'
-import { PermissionGate } from 'feature-gate';
+import { FeatureGate } from 'feature-gate';
 import Link from 'next/link'
 import Head from 'next/head'
 
@@ -25,18 +25,18 @@ const Layout = ({ children, title = 'This is the default title' }: Props): React
           <a>About</a>
         </Link>
 
-        <PermissionGate name="users">
+        <FeatureGate name="users">
           <>
             {' | '}
             <Link href="/users">
               <a>Users List</a>
             </Link>
           </>
-        </PermissionGate>
+        </FeatureGate>
 
-        <PermissionGate name="users-api">
+        <FeatureGate name="users-api">
           <span>{' | '}<a href="/api/users">Users API</a></span>
-        </PermissionGate>
+        </FeatureGate>
       </nav>
     </header>
     {children}

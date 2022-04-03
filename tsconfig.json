@@ -2,7 +2,7 @@
   "compilerOptions": {
     "outDir": "lib/esm",
     "module": "esnext",
-    "target": "es5",
+    "target": "esnext",
     "lib": [
       "es6",
       "dom",
