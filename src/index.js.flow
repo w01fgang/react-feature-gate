@@ -1,0 +1,35 @@
+// @flow
+type FeatureName = string;
+
+type FeatureVariant = string;
+
+type ComponentName = string;
+
+export type Rules = {|
+  featureFlags : { [key: ComponentName]: FeatureName, ... },
+features: { [key: FeatureName]: FeatureVariant, ... },
+validator ?: (params: Rules & { name: string }) => boolean,
+|};
+
+declare type ProviderProps = {|
+  ...Rules,
+  children: React$Node,
+|};
+
+declare type ConsumerProps = {|
+  children: React$Node,
+    fallback ?: React$Node,
+    name: ComponentName,
+|};
+
+declare type SwitchProps = {|
+  children: React$Node,
+    fallback: React$Node,
+      name: ComponentName,
+|};
+
+declare export function FeatureGateProvider(props: ProviderProps): React$Node;
+
+declare export function usePermission(name: ComponentName): {| ...Rules, granted: boolean |};
+
+declare export function PermissionGate(props: ConsumerProps): React$Node;
