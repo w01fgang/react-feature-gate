@@ -8,6 +8,7 @@ import React, {
   Ref,
   ReactChild,
   ReactElement,
+  PropsWithChildren,
 } from "react";
 
 export type Rules = {
@@ -75,7 +76,7 @@ function Gate({ children, name, fallback, ...other }: ConsumerProps, ref: Ref<HT
 
   if (!enabled) return fallback || null;
 
-  return cloneElement(children, { ref, ...other });
+  return cloneElement(children as ReactElement<PropsWithChildren<ConsumerProps & { ref: Ref<HTMLElement> }>>, { ref, ...other });
 }
 
 export const FeatureGate = forwardRef(Gate);
@@ -95,9 +96,9 @@ function Switch({ children, name, fallback, ...other }: SwitchProps, ref: Ref<HT
 
   if (!present) return null;
 
-  if (!enabled) return cloneElement(fallback, { ref, ...other });
+  if (!enabled) return cloneElement(fallback as ReactElement<PropsWithChildren<ConsumerProps & { ref: Ref<HTMLElement> }>>, { ref, ...other });
 
-  return cloneElement(children, { ref, ...other });
+  return cloneElement(children as ReactElement<PropsWithChildren<ConsumerProps & { ref: Ref<HTMLElement> }>>, { ref, ...other });
 }
 
 export const FeatureSwitch = forwardRef<HTMLElement, SwitchProps>(Switch);
