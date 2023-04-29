@@ -1,11 +1,9 @@
 import React, {
   useContext,
   createContext,
-  cloneElement,
   forwardRef,
   isValidElement,
   Context,
-  Ref,
   ReactChild,
   ReactElement,
   PropsWithChildren,
@@ -61,7 +59,7 @@ export function useFeature(name: string): Rules & { enabled: boolean, present: b
   return { present, enabled, features, featureFlags };
 }
 
-function Gate({ children, name, fallback, ...other }: ConsumerProps, ref: Ref<HTMLElement>) {
+function Gate({ children, name, fallback }: ConsumerProps) {
   const { enabled } = useFeature(name);
 
   if (!isValidElement(children)) {
@@ -76,12 +74,12 @@ function Gate({ children, name, fallback, ...other }: ConsumerProps, ref: Ref<HT
 
   if (!enabled) return fallback || null;
 
-  return cloneElement(children as ReactElement<PropsWithChildren<ConsumerProps & { ref: Ref<HTMLElement> }>>, { ref, ...other });
+  return children;
 }
 
 export const FeatureGate = forwardRef(Gate);
 
-function Switch({ children, name, fallback, ...other }: SwitchProps, ref: Ref<HTMLElement>) {
+function Switch({ children, name, fallback }: SwitchProps) {
   const { enabled, present } = useFeature(name);
 
   if (!isValidElement(fallback)) {
@@ -96,9 +94,25 @@ function Switch({ children, name, fallback, ...other }: SwitchProps, ref: Ref<HT
 
   if (!present) return null;
 
-  if (!enabled) return cloneElement(fallback as ReactElement<PropsWithChildren<ConsumerProps & { ref: Ref<HTMLElement> }>>, { ref, ...other });
+  if (!enabled) return fallback;
 
-  return cloneElement(children as ReactElement<PropsWithChildren<ConsumerProps & { ref: Ref<HTMLElement> }>>, { ref, ...other });
+  return children;
 }
 
 export const FeatureSwitch = forwardRef<HTMLElement, SwitchProps>(Switch);
+
+export class Features {
+  validator: typeof hasFeature;
+
+  constructor(
+    public features: Record<string, string>,
+    validator?: typeof hasFeature
+  ) {
+    this.features = features;
+    this.validator = validator || hasFeature;
+  }
+
+  public has(featureFlags: Record<string, string>, name: string): boolean {
+    return this.validator({ features: this.features, featureFlags, name });
+  }
+}

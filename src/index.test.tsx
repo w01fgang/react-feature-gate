@@ -21,6 +21,10 @@ const renderWithProvider = (ui: ReactChild, featureFlags: Record<string, string>
   </FeatureGateProvider>
 )
 
+const TestComponent = React.forwardRef<HTMLDivElement>((props, ref) => (
+  <div {...props} ref={ref} data-testid="test-component" />
+));
+
 describe('FeatureGate', () => {
   describe('FeatureGateProvider', () => {
     it('should render children', () => {
@@ -77,6 +81,34 @@ describe('FeatureGate', () => {
 
       expect(container).not.toHaveTextContent('Hello');
     });
+
+    it('should forward ref to the wrapped component', () => {
+      const featureFlags = { feature1: 'true' };
+      const ref = React.createRef<HTMLDivElement>();
+      const { getByTestId } = renderWithProvider(
+        <FeatureGate name="feature1">
+          <TestComponent ref={ref} />
+        </FeatureGate>,
+        featureFlags
+      );
+
+      const testComponent = getByTestId('test-component');
+      expect(ref.current).toBe(testComponent);
+    });
+
+    it('should render fallback when feature is not enabled', () => {
+      const featureFlags = { feature1: 'false' };
+      const { container } = renderWithProvider(
+        <FeatureGate name="feature1" fallback={<div>Fallback</div>}>
+          <div>Hello</div>
+        </FeatureGate>,
+        featureFlags
+      );
+
+      expect(container).toHaveTextContent('Fallback');
+    });
+
+
   });
 
   describe('FeatureSwitch', () => {
@@ -115,6 +147,32 @@ describe('FeatureGate', () => {
 
       expect(container).not.toHaveTextContent('Hi');
       expect(container).not.toHaveTextContent('Hello');
+    });
+
+    it('should forward ref to the wrapped component', () => {
+      const featureFlags = { ABtest: 'A' };
+      const ref = React.createRef<HTMLDivElement>();
+      const { getByTestId } = renderWithProvider(
+        <FeatureSwitch fallback={<div>Hi</div>} name="ABtest">
+          <TestComponent ref={ref} />
+        </FeatureSwitch>,
+        featureFlags
+      );
+
+      const testComponent = getByTestId('test-component');
+      expect(ref.current).toBe(testComponent);
+    });
+
+    it('should not render if fallback prop is invalid in FeatureSwitch', () => {
+      const featureFlags = { ABtest: 'B' };
+      const { container } = renderWithProvider(
+        <FeatureSwitch fallback={<div>Fallback</div>} name="ABtest">
+          <div>Hello</div>
+        </FeatureSwitch>,
+        featureFlags
+      );
+
+      expect(container).toHaveTextContent('Fallback');
     });
   });
 });
