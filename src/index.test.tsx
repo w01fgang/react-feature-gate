@@ -2,16 +2,19 @@ import React, { ReactChild  } from 'react';
 import '@testing-library/jest-dom';
 import {
   render,
+  screen,
 } from '@testing-library/react';
 
 import {
   FeatureGateProvider,
   FeatureGate,
-  FeatureSwitch
+  FeatureSwitch,
+  Features,
 } from '.';
 
 const features = Object.freeze({
-  feature1: 'true',
+  feature1: 'default',
+  feature2: 'extended',
   ABtest: 'A',
 });
 
@@ -59,13 +62,14 @@ describe('FeatureGate', () => {
 
   describe('FeatureGate', () => {
     it('should render feature1', () => {
-      const featureFlags = { feature1: 'true' };
+      const featureFlags = { feature1: 'default' };
       const { container } = renderWithProvider(
         <FeatureGate name="feature1">
           <div>Hello</div>
         </FeatureGate>,
         featureFlags
       );
+      screen.debug(); //?
 
       expect(container).toHaveTextContent('Hello');
     });
@@ -83,7 +87,7 @@ describe('FeatureGate', () => {
     });
 
     it('should forward ref to the wrapped component', () => {
-      const featureFlags = { feature1: 'true' };
+      const featureFlags = { feature1: 'default' };
       const ref = React.createRef<HTMLDivElement>();
       const { getByTestId } = renderWithProvider(
         <FeatureGate name="feature1">
@@ -173,6 +177,38 @@ describe('FeatureGate', () => {
       );
 
       expect(container).toHaveTextContent('Fallback');
+    });
+  });
+
+  describe('createFeatures', () => {
+    const featuresDefinition = Object.freeze({
+      feature1: 'default',
+      feature2: 'extended',
+      ABtest: 'A',
+      BAtest: 'B',
+    });
+
+    const features = new Features(featuresDefinition);
+
+    const userFlags = {
+      feature1: 'default',
+      feature2: 'not-extended',
+      ABtest: 'A',
+      BAtest: 'A',
+    };
+
+    const hasFeature = (name: keyof typeof featuresDefinition) => features.has(userFlags, name);
+
+    it('should correctly identify enabled features', () => {
+      expect(hasFeature('feature1')).toBe(true);
+      expect(hasFeature('feature2')).toBe(false);
+      expect(hasFeature('ABtest')).toBe(true);
+      expect(hasFeature('BAtest')).toBe(false);
+    });
+
+    it('should return false for non-existent features', () => {
+      // @ts-expect-error test of the type definition
+      expect(hasFeature('nonExistentFeature')).toBe(false);
     });
   });
 });

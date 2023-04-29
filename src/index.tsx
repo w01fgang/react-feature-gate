@@ -6,7 +6,6 @@ import React, {
   Context,
   ReactChild,
   ReactElement,
-  PropsWithChildren,
 } from "react";
 
 export type Rules = {
@@ -101,18 +100,18 @@ function Switch({ children, name, fallback }: SwitchProps) {
 
 export const FeatureSwitch = forwardRef<HTMLElement, SwitchProps>(Switch);
 
-export class Features {
+export class Features<T extends Record<string, string>> {
   validator: typeof hasFeature;
 
   constructor(
-    public features: Record<string, string>,
+    public features: T,
     validator?: typeof hasFeature
   ) {
     this.features = features;
     this.validator = validator || hasFeature;
   }
 
-  public has(featureFlags: Record<string, string>, name: string): boolean {
-    return this.validator({ features: this.features, featureFlags, name });
+  public has<K extends keyof T>(featureFlags: Record<string, string>, name: K): boolean {
+    return this.validator({ features: this.features, featureFlags, name: name as string });
   }
 }
