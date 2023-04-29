@@ -1,10 +1,8 @@
 import React, {
   useContext,
   createContext,
-  forwardRef,
   isValidElement,
   Context,
-  ReactChild,
   ReactElement,
 } from "react";
 
@@ -20,18 +18,18 @@ const FeatureContext: Context<Rules> = createContext({
 });
 
 type ProviderProps = {
-  children: ReactChild,
+  children: ReactElement | string | number,
 } & Rules;
 
 type ConsumerProps = {
-  children: ReactChild,
-  fallback?: ReactChild,
+  children: ReactElement | string | number,
+  fallback?: ReactElement | string | number,
   name: string,
 };
 
 type SwitchProps = {
-  children: ReactChild,
-  fallback: ReactChild,
+  children: ReactElement | string | number,
+  fallback: ReactElement | string | number,
   name: string,
 };
 
@@ -58,7 +56,7 @@ export function useFeature(name: string): Rules & { enabled: boolean, present: b
   return { present, enabled, features, featureFlags };
 }
 
-function Gate({ children, name, fallback }: ConsumerProps) {
+export function FeatureGate({ children, name, fallback }: ConsumerProps) {
   const { enabled } = useFeature(name);
 
   if (!isValidElement(children)) {
@@ -76,9 +74,7 @@ function Gate({ children, name, fallback }: ConsumerProps) {
   return children;
 }
 
-export const FeatureGate = forwardRef(Gate);
-
-function Switch({ children, name, fallback }: SwitchProps) {
+export function FeatureSwitch({ children, name, fallback }: SwitchProps) {
   const { enabled, present } = useFeature(name);
 
   if (!isValidElement(fallback)) {
@@ -97,8 +93,6 @@ function Switch({ children, name, fallback }: SwitchProps) {
 
   return children;
 }
-
-export const FeatureSwitch = forwardRef<HTMLElement, SwitchProps>(Switch);
 
 export class Features<T extends Record<string, string>> {
   validator: typeof hasFeature;
