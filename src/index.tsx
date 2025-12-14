@@ -22,14 +22,14 @@ type ProviderProps = {
 } & Rules;
 
 type ConsumerProps = {
-  children: ReactElement | string | number,
-  fallback?: ReactElement | string | number,
+  children: ReactElement,
+  fallback?: ReactElement,
   name: string,
 };
 
 type SwitchProps = {
-  children: ReactElement | string | number,
-  fallback: ReactElement | string | number,
+  children: ReactElement,
+  fallback: ReactElement,
   name: string,
 };
 
@@ -65,7 +65,7 @@ export function FeatureGate({ children, name, fallback }: ConsumerProps) {
   }
 
   if (fallback !== undefined && !isValidElement(fallback)) {
-    console.error("Children prop is not a valid react element");
+    console.error("Fallback prop is not a valid react element");
     return null;
   }
 
