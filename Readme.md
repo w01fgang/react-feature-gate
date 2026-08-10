@@ -13,12 +13,17 @@ import { FeatureGateProvider } from 'feature-gate';
 
 // define or get from api features and freeze them
 const features = Object.freeze({
-  feature1: 'true',
+  feature1: 'default',
+  feature2: 'extended',
   ABtest: 'A',
 });
 
 function MyApp() {
-  const featureFlags = {}; // get from user api
+  const featureFlags = {  // get from user api
+    feature1: 'default',
+    feature2: 'none',
+    ABtest: 'B',
+  };
 
   return (
     <FeatureGateProvider featureFlags={featureFlags} features={features}>
@@ -33,7 +38,7 @@ then anywhere in the app use names of features defined in the features map
 import { FeatureGate } from 'feature-gate';
 
 <FeatureGate name="feature1">
-  <div>Component available for authorized user</div>
+  <div>Component available for user with feature1 enabled</div>
 </FeatureGate>
 
 ```
@@ -53,7 +58,7 @@ import { useFeature } from 'feature-gate';
 const { enabled: showFeature1 } = useFeature('feature1');
 // feature status for the current user
 ...
-{showFeature1 && <div>Component available for authorized user</div>}
+{showFeature1 && <div>Component available for user with feature1 enabled</div>}
 ```
 ### Advanced usage
 A validator function can be provided
@@ -63,7 +68,7 @@ import { FeatureGateProvider } from 'feature-gate';
 
 // define or get from api rules and freeze them
 const features = Object.freeze({
-  feature1: 'true',
+  feature1: 'default',
   ABtest: 'A',
 });
 
@@ -76,7 +81,10 @@ function validator({ featureFlags, features, name }) {
 }
 
 function MyApp() {
-  const featureFlags = {}; // get from user api
+  const featureFlags = { // get from user api
+    feature1: 'off',
+    ABtest: 'A',
+  };
 
   return (
     <FeatureGateProvider featureFlags={featureFlags} features={features} validator={validator}>

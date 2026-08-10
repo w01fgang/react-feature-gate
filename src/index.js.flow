@@ -3,12 +3,10 @@ type FeatureName = string;
 
 type FeatureVariant = string;
 
-type ComponentName = string;
-
 export type Rules = {|
-  featureFlags : { [key: ComponentName]: FeatureName, ... },
-features: { [key: FeatureName]: FeatureVariant, ... },
-validator ?: (params: Rules & { name: string }) => boolean,
+  featureFlags: { [key: FeatureName]: FeatureVariant, ... },
+  features: { [key: FeatureName]: FeatureVariant, ... },
+  validator?: (params: Rules & { name: string }) => boolean,
 |};
 
 declare type ProviderProps = {|
@@ -18,18 +16,18 @@ declare type ProviderProps = {|
 
 declare type ConsumerProps = {|
   children: React$Node,
-    fallback ?: React$Node,
-    name: ComponentName,
+  fallback?: React$Node,
+  name: FeatureName,
 |};
 
 declare type SwitchProps = {|
   children: React$Node,
-    fallback: React$Node,
-      name: ComponentName,
+  fallback: React$Node,
+  name: FeatureName,
 |};
 
 declare export function FeatureGateProvider(props: ProviderProps): React$Node;
 
-declare export function usePermission(name: ComponentName): {| ...Rules, granted: boolean |};
+declare export function useFeature(name: FeatureName): {| ...Rules, enabled: boolean |};
 
 declare export function PermissionGate(props: ConsumerProps): React$Node;

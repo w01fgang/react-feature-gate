@@ -1,4 +1,4 @@
-import React, { ReactChild, createRef } from 'react';
+import React, { ReactChild } from 'react';
 import '@testing-library/jest-dom';
 import {
   render,
@@ -8,11 +8,13 @@ import {
   FeatureGateProvider,
   FeatureGate,
   FeatureSwitch,
+  Features,
   useFeature,
 } from '.';
 
 const features = Object.freeze({
-  feature1: 'true',
+  feature1: 'default',
+  feature2: 'extended',
   ABtest: 'A',
 });
 
@@ -21,6 +23,10 @@ const renderWithProvider = (ui: ReactChild, featureFlags: Record<string, string>
     {ui}
   </FeatureGateProvider>
 )
+
+const TestComponent = React.forwardRef<HTMLDivElement>((props, ref) => (
+  <div {...props} ref={ref} data-testid="test-component" />
+));
 
 describe('FeatureGate', () => {
   describe('FeatureGateProvider', () => {
@@ -68,7 +74,7 @@ describe('FeatureGate', () => {
     });
 
     it('should not render children when custom validator returns false', () => {
-      const featureFlags = { feature1: 'true' };
+      const featureFlags = { feature1: 'default' };
       const validator = () => false;
       const { container } = render(
         <FeatureGateProvider featureFlags={featureFlags} features={features} validator={validator}>
@@ -84,7 +90,7 @@ describe('FeatureGate', () => {
 
   describe('FeatureGate', () => {
     it('should render feature1', () => {
-      const featureFlags = { feature1: 'true' };
+      const featureFlags = { feature1: 'default' };
       const { container } = renderWithProvider(
         <FeatureGate name="feature1">
           <div>Hello</div>
@@ -107,7 +113,33 @@ describe('FeatureGate', () => {
       expect(container).not.toHaveTextContent('Hello');
     });
 
-    it('should render fallback when feature is disabled', () => {
+    it('should forward ref to the wrapped component', () => {
+      const featureFlags = { feature1: 'default' };
+      const ref = React.createRef<HTMLDivElement>();
+      const { getByTestId } = renderWithProvider(
+        <FeatureGate name="feature1">
+          <TestComponent ref={ref} />
+        </FeatureGate>,
+        featureFlags
+      );
+
+      const testComponent = getByTestId('test-component');
+      expect(ref.current).toBe(testComponent);
+    });
+
+    it('should render fallback when feature is not enabled', () => {
+      const featureFlags = { feature1: 'false' };
+      const { container } = renderWithProvider(
+        <FeatureGate name="feature1" fallback={<div>Fallback</div>}>
+          <div>Hello</div>
+        </FeatureGate>,
+        featureFlags
+      );
+
+      expect(container).toHaveTextContent('Fallback');
+    });
+
+    it('should render fallback when the flag is absent', () => {
       const featureFlags = {};
       const { container } = renderWithProvider(
         <FeatureGate name="feature1" fallback={<div>Hi</div>}>
@@ -118,20 +150,6 @@ describe('FeatureGate', () => {
 
       expect(container).toHaveTextContent('Hi');
       expect(container).not.toHaveTextContent('Hello');
-    });
-
-    it('should forward ref and spread extra props to the child', () => {
-      const featureFlags = { feature1: 'true' };
-      const ref = createRef<HTMLDivElement>();
-      const { container } = renderWithProvider(
-        <FeatureGate name="feature1" ref={ref} data-testid="gated">
-          <div>Hello</div>
-        </FeatureGate>,
-        featureFlags
-      );
-
-      expect(ref.current).toBe(container.querySelector('div'));
-      expect(ref.current).toHaveAttribute('data-testid', 'gated');
     });
   });
 
@@ -171,6 +189,64 @@ describe('FeatureGate', () => {
 
       expect(container).not.toHaveTextContent('Hi');
       expect(container).not.toHaveTextContent('Hello');
+    });
+
+    it('should forward ref to the wrapped component', () => {
+      const featureFlags = { ABtest: 'A' };
+      const ref = React.createRef<HTMLDivElement>();
+      const { getByTestId } = renderWithProvider(
+        <FeatureSwitch fallback={<div>Hi</div>} name="ABtest">
+          <TestComponent ref={ref} />
+        </FeatureSwitch>,
+        featureFlags
+      );
+
+      const testComponent = getByTestId('test-component');
+      expect(ref.current).toBe(testComponent);
+    });
+
+    it('should not render if fallback prop is invalid in FeatureSwitch', () => {
+      const featureFlags = { ABtest: 'B' };
+      const { container } = renderWithProvider(
+        <FeatureSwitch fallback={<div>Fallback</div>} name="ABtest">
+          <div>Hello</div>
+        </FeatureSwitch>,
+        featureFlags
+      );
+
+      expect(container).toHaveTextContent('Fallback');
+    });
+  });
+
+  describe('createFeatures', () => {
+    const featuresDefinition = Object.freeze({
+      feature1: 'default',
+      feature2: 'extended',
+      ABtest: 'A',
+      BAtest: 'B',
+    });
+
+    const features = new Features(featuresDefinition);
+
+    const userFlags = {
+      feature1: 'default',
+      feature2: 'not-extended',
+      ABtest: 'A',
+      BAtest: 'A',
+    };
+
+    const hasFeature = (name: keyof typeof featuresDefinition) => features.has(userFlags, name);
+
+    it('should correctly identify enabled features', () => {
+      expect(hasFeature('feature1')).toBe(true);
+      expect(hasFeature('feature2')).toBe(false);
+      expect(hasFeature('ABtest')).toBe(true);
+      expect(hasFeature('BAtest')).toBe(false);
+    });
+
+    it('should return false for non-existent features', () => {
+      // @ts-expect-error test of the type definition
+      expect(hasFeature('nonExistentFeature')).toBe(false);
     });
   });
 
@@ -247,10 +323,10 @@ describe('FeatureGate', () => {
 
     it('should render nothing and log an error when FeatureGate children is not a valid element', () => {
       const featureFlags = { feature1: 'true' };
+      // @ts-expect-error intentionally invalid element to exercise the runtime guard
+      const invalidChildren = <FeatureGate name="feature1">not a valid element</FeatureGate>;
       const { container } = renderWithProvider(
-        <FeatureGate name="feature1">
-          not a valid element
-        </FeatureGate>,
+        invalidChildren,
         featureFlags
       );
 
@@ -261,7 +337,11 @@ describe('FeatureGate', () => {
     it('should render nothing and log an error when FeatureSwitch fallback is not a valid element', () => {
       const featureFlags = { ABtest: 'B' };
       const { container } = renderWithProvider(
-        <FeatureSwitch fallback="not a valid element" name="ABtest">
+        <FeatureSwitch
+          // @ts-expect-error intentionally invalid element to exercise the runtime guard
+          fallback="not a valid element"
+          name="ABtest"
+        >
           <div>Hello</div>
         </FeatureSwitch>,
         featureFlags
@@ -285,7 +365,7 @@ describe('FeatureGate', () => {
     });
 
     it('should report present and enabled when the flag matches the feature', () => {
-      const featureFlags = { feature1: 'true' };
+      const featureFlags = { feature1: 'default' };
       renderWithProvider(<Probe name="feature1" />, featureFlags);
 
       expect(result).toEqual({

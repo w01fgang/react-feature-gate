@@ -1,12 +1,8 @@
 import React, {
   useContext,
   createContext,
-  cloneElement,
-  forwardRef,
   isValidElement,
   Context,
-  Ref,
-  ReactChild,
   ReactElement,
 } from "react";
 
@@ -22,18 +18,18 @@ const FeatureContext: Context<Rules> = createContext({
 });
 
 type ProviderProps = {
-  children: ReactChild,
+  children: ReactElement | string | number,
 } & Rules;
 
 type ConsumerProps = {
-  children: ReactChild,
-  fallback?: ReactChild,
+  children: ReactElement,
+  fallback?: ReactElement,
   name: string,
 };
 
 type SwitchProps = {
-  children: ReactChild,
-  fallback: ReactChild,
+  children: ReactElement,
+  fallback: ReactElement,
   name: string,
 };
 
@@ -60,7 +56,7 @@ export function useFeature(name: string): Rules & { enabled: boolean, present: b
   return { present, enabled, features, featureFlags };
 }
 
-function Gate({ children, name, fallback, ...other }: ConsumerProps, ref: Ref<HTMLElement>) {
+export function FeatureGate({ children, name, fallback }: ConsumerProps) {
   const { enabled } = useFeature(name);
 
   if (!isValidElement(children)) {
@@ -69,18 +65,16 @@ function Gate({ children, name, fallback, ...other }: ConsumerProps, ref: Ref<HT
   }
 
   if (fallback !== undefined && !isValidElement(fallback)) {
-    console.error("Children prop is not a valid react element");
+    console.error("Fallback prop is not a valid react element");
     return null;
   }
 
   if (!enabled) return fallback || null;
 
-  return cloneElement(children, { ref, ...other });
+  return children;
 }
 
-export const FeatureGate = forwardRef(Gate);
-
-function Switch({ children, name, fallback, ...other }: SwitchProps, ref: Ref<HTMLElement>) {
+export function FeatureSwitch({ children, name, fallback }: SwitchProps) {
   const { enabled, present } = useFeature(name);
 
   if (!isValidElement(fallback)) {
@@ -95,9 +89,23 @@ function Switch({ children, name, fallback, ...other }: SwitchProps, ref: Ref<HT
 
   if (!present) return null;
 
-  if (!enabled) return cloneElement(fallback, { ref, ...other });
+  if (!enabled) return fallback;
 
-  return cloneElement(children, { ref, ...other });
+  return children;
 }
 
-export const FeatureSwitch = forwardRef<HTMLElement, SwitchProps>(Switch);
+export class Features<T extends Record<string, string>> {
+  validator: typeof hasFeature;
+
+  constructor(
+    public features: T,
+    validator?: typeof hasFeature
+  ) {
+    this.features = features;
+    this.validator = validator || hasFeature;
+  }
+
+  public has<K extends keyof T>(featureFlags: Record<string, string>, name: K): boolean {
+    return this.validator({ features: this.features, featureFlags, name: name as string });
+  }
+}
