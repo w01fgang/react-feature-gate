@@ -70,7 +70,7 @@ const features = Object.freeze({
 function validator({ featureFlags, features, name }) {
   // default validator implementation
   const feature = featureFlags[name];
-  if (!feature) return false;
+  if (feature === undefined) return false;
 
   return features[name] === feature;
 }
