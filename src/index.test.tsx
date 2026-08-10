@@ -248,6 +248,12 @@ describe('FeatureGate', () => {
       // @ts-expect-error test of the type definition
       expect(hasFeature('nonExistentFeature')).toBe(false);
     });
+
+    it('should treat an empty-string flag value as present', () => {
+      const themeFeatures = new Features({ theme: '' });
+      expect(themeFeatures.has({ theme: '' }, 'theme')).toBe(true);
+      expect(themeFeatures.has({}, 'theme')).toBe(false);
+    });
   });
 
   describe('empty string values', () => {
