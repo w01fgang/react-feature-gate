@@ -43,7 +43,7 @@ export function FeatureGateProvider({ children, featureFlags, features, validato
 
 const hasFeature = ({ features, featureFlags, name }: Rules & { name: string }): boolean => {
   const feature = featureFlags[name];
-  if (!feature) return false;
+  if (feature === undefined) return false;
 
   return features[name] === feature;
 };
@@ -51,7 +51,7 @@ const hasFeature = ({ features, featureFlags, name }: Rules & { name: string }):
 export function useFeature(name: string): Rules & { enabled: boolean, present: boolean } {
   const { featureFlags, features, validator = hasFeature }: Rules = useContext(FeatureContext);
 
-  const present = Boolean(featureFlags[name]);
+  const present = featureFlags[name] !== undefined;
   const enabled = validator({ features, featureFlags, name });
   return { present, enabled, features, featureFlags };
 }
